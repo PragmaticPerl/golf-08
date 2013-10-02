@@ -6,15 +6,15 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME                => 'golf-08',
     AUTHOR              => q{Vladimir Lettiev <crux@cpan.org>},
-    VERSION             => '0.01',
+    VERSION             => '0.03',
     ABSTRACT            => 'Golf 08',
-	BUILD_REQUIRES => {
+    BUILD_REQUIRES      => {
         'Capture::Tiny' => '0.12',
-	},
+    },
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
-    PL_FILES            => { 'digits.pl' },
+    EXE_FILES           => [ <script/*.pl> ],
     PREREQ_PM => {
         'Test::More' => 0,
     },
