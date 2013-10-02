@@ -3,19 +3,30 @@ use warnings;
 use Test::More;
 use Capture::Tiny qw(capture_stdout);
 
-my @data = grep { length $_ } split /\@\@\s/, do { local $/; <DATA> };
+my @data =
+  map { s/^(.+)\n//; [ $1, split /==\n/ ] } grep { length } split /\@\@\s/,
+  do { local $/; <DATA> };
 
-for my $data (@data) {
-    $data =~ s/^(.+)\n//;
-    my $name = $1;
-    my ($in, $out) = split /==\n/, $data;
-    is capture_stdout {
-        my $pid = open my $fh, '|-', 'script/digits.pl'
-            or BAIL_OUT("Can't run digits.pl");
-        print $fh $in;
-        close $fh;
-        waitpid $pid,0;
-    }, $out, $name;
+for my $script (<script/*.pl>) {
+    next if $script eq 'script/example.pl';
+    diag("Testing $script");
+    for my $data (@data) {
+        is capture_stdout {
+            my $pid = open my $fh, '|-';
+            if ($pid) {
+                print $fh $data->[1];
+                close $fh;
+                waitpid $pid, 0;
+            }
+            elsif ( $pid == 0 ) {
+                { exec $^X, $script; }
+                BAIL_OUT("Can't run $script");
+            }
+            else {
+                BAIL_OUT("Can't fork");
+            }
+        }, $data->[2], $data->[0];
+    }
 }
 
 done_testing;
