@@ -9,7 +9,7 @@ WriteMakefile(
     VERSION             => '0.03',
     ABSTRACT            => 'Golf 08',
     BUILD_REQUIRES      => {
-        'Capture::Tiny' => '0.12',
+        'IPC::Run' => '0.92',
     },
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
