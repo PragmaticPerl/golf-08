@@ -1,4 +1,18 @@
-Revision history for golf201309
+Revision history for golf-08
+
+0.05    2013-10-04
+        Crossplatform tests; added new testcases (contributed by Sergei
+        Mozhaisky)
+        added AUTHORS
+
+0.04    2013-10-03
+        Updated README.md
+
+0.03    2013-10-02
+        Fixed MANIFEST and Makefile.PL        
+
+0.03    2013-10-02
+        Test all scripts in script dir and find winners
 
 0.01    2013-10-02
         First version, released on an unsuspecting world.
