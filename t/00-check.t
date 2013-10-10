@@ -2,24 +2,65 @@ use strict;
 use warnings;
 use Test::More;
 use IPC::Run qw( start finish );
+use Storable;
 
 my @data =
   map { s/^(.+)\n//; [ $1, split /==\n/ ] } grep { length } split /\@\@\s/,
   do { local $/; <DATA> };
 
+sub run_test {
+    my ($script,$stdin,$expected,$msg) = @_;
+    my ($in, $out);
+    my $h = start ['perl', $script], \$in, \$out;
+    $in .= $stdin;
+    finish($h);
+    is $out, $expected, $msg;
+}
+
+sub make_long_field {
+    my $long_in  = "712345674\n";
+    my $long_out = " 12345674\n";
+    for (0..300) {
+        $long_in  .= "523456789\n534567894\n";
+        $long_out .= " 23456789\n 34567894\n";
+    }
+    $long_in  .= "891779657\n";
+    $long_out .= "     9657\n";
+    for (0..200) {
+        $long_in  .= "523456789\n534567894\n";
+        $long_out .= " 23456789\n 34567894\n";
+    }
+    $long_in  .= "291779657\n";
+    $long_out .= "     9657\n";
+    for (0..300) {
+        $long_in  .= "523456789\n534567894\n";
+        $long_out .= " 23456789\n 34567894\n";
+    }
+    $long_in  .= "313459339\n";
+    $long_out .= " 1345    \n";
+    return $long_in, $long_out;
+}
+
+
+my %results;
 for my $script (<script/*.pl>) {
     next if $script eq 'script/example.pl';
     diag("Testing $script");
+    my @t = ();
     for my $data (@data) {
-    my ($in, $out);
-    my $h = start ['perl', $script], \$in, \$out;
-        $in .= $data->[1];
-        finish($h);
-        is $out, $data->[2], $data->[0];
+        push @t, run_test($script,$data->[1],$data->[2],$data->[0]);
     }
+
+    my ($long_in, $long_out) = make_long_field();
+    push @t, run_test($script,$long_in,$long_out,"long field");
+
+    $results{$script} = 1;
+    map {$results{$script} *= $_ } @t;
 }
 
 done_testing;
+
+store \%results, 'golf-08-check.out';
 
 __DATA__
 @@ nothing
@@ -87,6 +128,24 @@ __DATA__
 121212125
 238    93
 454545454
+@@ long horizontal 2
+121212121
+355555555
+212121212
+==
+121212121
+3        
+212121212
+@@ long horizontal and long vertical
+212121214
+777777779
+555555554
+898989897
+==
+        4
+        9
+        4
+        7
 @@ square
 212121255
 787878755
@@ -95,4 +154,50 @@ __DATA__
 2121212  
 7878787  
 454545498
+@@ square 2
+454545498
+312121255
+687878755
+==
+454545498
+3121212  
+6878787  
+@@ square 3
+124545498
+553121261
+554878787
+==
+124545498
+  3121261
+  4878787
+@@ cross
+127126345
+678772612
+361559787
+126987135
+==
+127  6345
+67    612
+36    787
+126  7135
+@@ cross 2
+125125345
+658772512
+341559487
+136984135
+==
+12    345
+6      12
+3      87
+13    135
+@@ cross 3
+125125845
+758772532
+941559416
+236984751
+==
+1      45
+        2
+        6
+2      51
 @@
