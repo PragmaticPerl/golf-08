@@ -15,14 +15,17 @@ for my $script (<script/*.pl>) {
         diag( sprintf "% 20s: failed tests, skipped", $script);
         next;
     }
-    open my $fh, '<', $script or BAIL_OUT();
-    my $shebang = <$fh>;
-    chomp $shebang;
-    my $length = length do { local $/; <$fh> };
-    close $fh;
+
+    local (*FILE, $/);
+    open FILE, '<', $script or BAIL_OUT();
+    local $_=<FILE>;
+    s/\#! ?\S+\s?// if /^\#!/;
+    s/\s*\z//;
+    my $length = length($_);
+
     $script =~ s/script\///;
-    diag( sprintf "% 20s: shebang=% 20s length=% 3s",
-        $script, $shebang, $length );
+    diag( sprintf "% 20s: length=% 3s",
+        $script, $length );
     pass();
 
     if ( $min > $length ) {
